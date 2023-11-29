@@ -41,21 +41,24 @@ speech_to_text_code = """
 
         // Send the transcript to the Streamlit app
         Streamlit.setComponentValue(transcript);
-        return transcript;
     }
 </script>
 """
+
+class SessionState:
+    transcript = ""
 
 def main():
     st.title("Streamlit App with Speech-to-Text")
 
     # Display the speech-to-text component
-    transcript = st.components.v1.html(speech_to_text_code, height=200)
+    st.components.v1.html(speech_to_text_code, height=200)
 
-    if transcript:
-        # Display the stored transcribed text
-        st.text(f"Stored Transcript: {transcript}")
-        print(transcript)
+    # Get the session state
+    session_state = SessionState()
+
+    # Display the stored transcribed text
+    st.text(f"Stored Transcript: {session_state.transcript}")
 
 if __name__ == "__main__":
     main()
