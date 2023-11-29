@@ -28,6 +28,10 @@ def main():
     # Display the HTML component
     st.components.v1.html(html_code, height=200)
 
+    # Create a session state to store the message
+    if 'message' not in st.session_state:
+        st.session_state.message = "Initial Message"
+
     # Get the updated message from the HTML component
     updated_message = st.session_state.message
     if updated_message:
