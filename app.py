@@ -15,6 +15,9 @@ speech_to_text_code = """
     const stopButton = document.getElementById("stopSpeechToText");
     const transcriptionBox = document.getElementById("transcriptionBox");
 
+    // Establish a connection to Streamlit
+    const Streamlit = window.Streamlit;
+
     startButton.addEventListener("click", startSpeechToText);
     stopButton.addEventListener("click", stopSpeechToText);
 
@@ -39,31 +42,23 @@ speech_to_text_code = """
         const transcript = event.results[0][0].transcript;
         transcriptionBox.value = transcript;
 
-        // Send the transcript to the Streamlit app
-        Streamlit.setComponentValue(transcript);
+        // Send the transcript to Streamlit
+        Streamlit.setComponentValue({ name: "transcript", data: transcript });
     }
 </script>
 """
-
-class SessionState:
-    transcript = ""
 
 def main():
     st.title("Streamlit App with Speech-to-Text")
 
     # Display the speech-to-text component
-    st.components.v1.html(speech_to_text_code, height=200)
+    #st.components.v1.html(speech_to_text_code, height=200)
 
-    # Get the session state
-    session_state = SessionState()
+    # Receive the transcript from JavaScript
+    transcript = st.components.v1.html("", height=0, key="transcript").transcript
 
-    # Display the stored transcribed text
-    #st.text(f"Stored Transcript: {session_state.transcript}")
-
-    # Display the real-time transcribed text
-    real_time_transcript = st.text_area("Real-Time Transcription", value=session_state.transcript, height=100)
-    session_state.transcript = real_time_transcript
-    st.text(f"Stored Transcript: {session_state.transcript}")
+    # Use the transcript variable in your Python code
+    st.write("Transcript:", transcript)
 
 if __name__ == "__main__":
     main()
