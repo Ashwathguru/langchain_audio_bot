@@ -4,7 +4,7 @@ def main():
     st.title("Streamlit App with Speech-to-Text")
 
     # Initialize the transcript variable
-    transcript = st.text_area("Transcript:", height=100)
+    #transcript = st.text_area("Transcript:", height=100)
 
     # Custom HTML and JavaScript code for speech-to-text
     speech_to_text_code = """
@@ -42,6 +42,9 @@ def main():
                 // Send the transcript to Streamlit
                 const transcript = transcriptionBox.value;
                 Streamlit.setComponentValue({ name: "transcript", data: transcript });
+
+                // Display the updated transcript using st.write
+                Streamlit.setComponentValue({ name: "updateTranscript", data: true });
             }
         }
 
@@ -58,14 +61,14 @@ def main():
     # Display the speech-to-text component
     st.components.v1.html(speech_to_text_code, height=200)
 
-    # Update the transcript value in Python
-    if st.button("Update Transcript"):
-        # Retrieve the updated transcript from JavaScript
-        updated_transcript = st._get_widget_value("transcript")
-        
-        # Update the Python transcript variable
-        transcript = updated_transcript
-        st.text_area("Transcript:", value=transcript, height=100)
+    # Use st.form_submit_button to trigger updates
+    with st.form("update_form"):
+        st.form_submit_button("Update Transcript")
+
+    # Check if the form was submitted and update the Python transcript variable
+    if st.session_state.update_form:
+        updated_transcript = st.session_state.transcript
+        st.text_area("Transcript:", value=updated_transcript, height=100)
 
 if __name__ == "__main__":
     main()
