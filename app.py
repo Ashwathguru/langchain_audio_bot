@@ -1,85 +1,61 @@
 import streamlit as st
-import speech_recognition as sr
-import io
-import soundfile as sf
-import numpy as np
 
-# Streamlit magic command to include the JavaScript code
-st.markdown(
-    """
+def main():
+    st.title("Streamlit App with Client-Side Microphone Access")
+
+    # Custom HTML and JavaScript code to access the microphone
+    mic_js_code = """
     <script>
-        let recorder;
-        let chunks = [];
+        const recognition = new window.webkitSpeechRecognition();
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('mic-output').value = transcript;
+        };
 
         function startRecording() {
-            chunks = [];
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(function (stream) {
-                    recorder = new MediaRecorder(stream);
-                    recorder.ondataavailable = function (e) {
-                        if (e.data.size > 0) {
-                            chunks.push(e.data);
-                        }
-                    };
-                    recorder.onstop = function () {
-                        const audioBlob = new Blob(chunks, { type: 'audio/wav' });
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        Shiny.setInputValue('audio_data', audioUrl);
-                    };
-                    recorder.start();
-                })
-                .catch(function (err) {
-                    console.error('Error accessing microphone', err);
-                });
+            recognition.start();
         }
 
         function stopRecording() {
-            recorder.stop();
+            recognition.stop();
+        }
+
+        function saveToFile() {
+            const textToSave = document.getElementById('mic-output').value;
+            const blob = new Blob([textToSave], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'output.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
     </script>
     """
-)
 
-def main():
-    st.title("Audio Recorder and Transcriber")
+    st.components.v1.html(mic_js_code, height=0)
 
-    # Button to start recording
-    if st.button("Start Recording"):
-        st.markdown("Recording started! Speak into the microphone.")
-        st.markdown("To stop recording, click the 'Stop Recording' button.")
-        st.markdown("<button onclick='stopRecording()'>Stop Recording</button>", unsafe_allow_html=True)
+    st.text("Click the 'Start Recording' button and speak into your microphone.")
 
-    # Shiny component to receive audio data from JavaScript
-    audio_data = st.shiny_input("audio_data")
+    # Output area to display the recognized text
+    output_text = st.text_area("Recognized Text", "", key="mic-output")
 
-    # Button to transcribe and save the audio
-    if st.button("Transcribe and Save"):
-        if audio_data is not None:
-            text = transcribe_audio(audio_data)
-            save_to_file(text)
-            st.success("Audio transcribed and saved to 'sample.txt'")
-        else:
-            st.warning("No audio recorded!")
+    # Start and stop recording buttons
+    start_button = st.button("Start Recording", on_click="startRecording()")
+    stop_button = st.button("Stop Recording", on_click="stopRecording()")
 
-def transcribe_audio(audio_data):
-    audio_array = st.audio_recorder(key="audio_recorder")
-    audio_array = np.array(audio_array).T[0]  # Extract the audio data
+    # Button to save the text to a file
+    save_button = st.button("Save to File", on_click="saveToFile()")
 
-    # Save audio to a temporary file
-    with io.BytesIO() as wav_io:
-        sf.write(wav_io, audio_array, samplerate=44100, format="wav")
-        wav_io.seek(0)
+    if start_button:
+        st.info("Recording started...")
 
-        # Transcribe audio using Google Web Speech API
-        recognizer = sr.Recognizer()
-        with sr.AudioFile(wav_io) as source:
-            audio_text = recognizer.record(source)
-            text = recognizer.recognize_google(audio_text)
-        return text
+    if stop_button:
+        st.info("Recording stopped.")
 
-def save_to_file(text):
-    with open("sample.txt", "w") as file:
-        file.write(text)
+    if save_button:
+        st.info("Text saved to 'output.txt'")
 
 if __name__ == "__main__":
     main()
