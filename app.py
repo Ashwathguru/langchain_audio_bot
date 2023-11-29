@@ -1,41 +1,52 @@
 import streamlit as st
 
-html_code = """
+# Custom HTML and JavaScript code for speech-to-text
+speech_to_text_code = """
 <div>
-    <p id="message">Initial Message</p>
-    <button onclick="sendMessage()">Send Message</button>
+    <button id="startSpeechToText">Start Speech to Text</button>
+    <button id="stopSpeechToText" disabled>Stop Speech to Text</button>
 </div>
+<textarea id="transcriptionBox" rows="4" cols="50" readonly></textarea>
 
 <script>
-    function sendMessage() {
-        const message = prompt("Enter a new message:");
-        if (message) {
-            // Send the message to Streamlit
-            Streamlit.setComponentValue({ name: 'message', data: message });
+    let recognition;
+
+    const startButton = document.getElementById("startSpeechToText");
+    const stopButton = document.getElementById("stopSpeechToText");
+    const transcriptionBox = document.getElementById("transcriptionBox");
+
+    startButton.addEventListener("click", startSpeechToText);
+    stopButton.addEventListener("click", stopSpeechToText);
+
+    function startSpeechToText() {
+        recognition = new window.webkitSpeechRecognition();
+        recognition.onresult = handleSpeechResult;
+        recognition.start();
+
+        startButton.disabled = true;
+        stopButton.disabled = false;
+    }
+
+    function stopSpeechToText() {
+        if (recognition) {
+            recognition.stop();
+            startButton.disabled = false;
+            stopButton.disabled = true;
         }
     }
 
-    // Listen for updates from Streamlit
-    Streamlit.getComponentValue("message").then(data => {
-        document.getElementById("message").innerText = data;
-    });
+    function handleSpeechResult(event) {
+        const transcript = event.results[0][0].transcript;
+        transcriptionBox.value = transcript;
+    }
 </script>
 """
 
 def main():
-    st.title("Bi-Directional Communication Example")
+    st.title("Streamlit App with Speech-to-Text")
 
-    # Display the HTML component
-    st.components.v1.html(html_code, height=200)
-
-    # Create a session state to store the message
-    if 'message' not in st.session_state:
-        st.session_state.message = "Initial Message"
-
-    # Get the updated message from the HTML component
-    updated_message = st.session_state.message
-    if updated_message:
-        st.success(f"Updated Message: {updated_message}")
+    # Display the speech-to-text component
+    st.components.v1.html(speech_to_text_code, height=200)
 
 if __name__ == "__main__":
     main()
