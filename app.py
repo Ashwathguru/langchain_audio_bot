@@ -1,11 +1,11 @@
 import streamlit as st
-from streamlit_aggrid import st_aggrid
 
 def main():
     st.title("Streamlit App with Speech-to-Text")
 
     # Initialize the transcript variable
-    transcript = st.text_area("Transcript:", height=100, key="transcript_input_key")
+    transcript_input_key = "transcript_input_key"
+    transcript_input = st.text_area("Transcript:", height=100, key=transcript_input_key)
 
     # Custom HTML and JavaScript code for speech-to-text
     speech_to_text_code = """
@@ -61,8 +61,8 @@ def main():
 
     # Check if the transcript has been updated and update the Python transcript variable
     if st.button("Update Transcript"):
-        updated_transcript = st_aggrid(value=st.session_state.transcript_input_key, height=100, key="transcript_output_key")
-        st.text_area("Transcript:", value=updated_transcript, height=100, key="transcript_input_key")
+        updated_transcript = st.session_state[transcript_input_key]
+        st.text_area("Transcript:", value=updated_transcript, height=100, key=transcript_input_key)
 
 if __name__ == "__main__":
     main()
