@@ -1,84 +1,57 @@
 import streamlit as st
-from streamlit.report_thread import get_report_ctx
-from streamlit.server.server import Server
+from streamlit.components.v1 import CustomComponent
+
+# Custom HTML and JavaScript code for speech-to-text
+speech_to_text_code = """
+<div>
+    <button id="startSpeechToText">Start Speech to Text</button>
+    <button id="stopSpeechToText" disabled>Stop Speech to Text</button>
+</div>
+<textarea id="transcriptionBox" rows="4" cols="50" readonly></textarea>
+
+<script>
+    let recognition;
+
+    const startButton = document.getElementById("startSpeechToText");
+    const stopButton = document.getElementById("stopSpeechToText");
+    const transcriptionBox = document.getElementById("transcriptionBox");
+
+    startButton.addEventListener("click", startSpeechToText);
+    stopButton.addEventListener("click", stopSpeechToText);
+
+    function startSpeechToText() {
+        recognition = new window.webkitSpeechRecognition();
+        recognition.onresult = handleSpeechResult;
+        recognition.start();
+
+        startButton.disabled = true;
+        stopButton.disabled = false;
+    }
+
+    function stopSpeechToText() {
+        if (recognition) {
+            recognition.stop();
+            startButton.disabled = false;
+            stopButton.disabled = true;
+        }
+    }
+
+    function handleSpeechResult(event) {
+        const transcript = event.results[0][0].transcript;
+        transcriptionBox.value = transcript;
+    }
+</script>
+"""
+
+class SpeechToText(CustomComponent):
+    def __init__(self):
+        super().__init__(speech_to_text_code, key="speech-to-text")
 
 def main():
-    st.title("Streamlit App with Client-Side Microphone Access")
+    st.title("Streamlit App with Speech-to-Text")
 
-    # Custom HTML and JavaScript code to access the microphone
-    mic_js_code = """
-    <script>
-        const recognition = new window.webkitSpeechRecognition();
-
-        recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            document.getElementById('mic-output').value = transcript;
-        };
-
-        function startRecording() {
-            recognition.start();
-        }
-
-        function stopRecording() {
-            recognition.stop();
-            updateStreamlitState();
-        }
-
-        function saveToFile() {
-            const textToSave = document.getElementById('mic-output').value;
-            const blob = new Blob([textToSave], { type: 'text/plain' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'output.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        function updateStreamlitState() {
-            const transcript = document.getElementById('mic-output').value;
-            Streamlit.setComponentValue(transcript);
-        }
-    </script>
-    """
-
-    st.components.v1.html(mic_js_code, height=0)
-
-    st.text("Click the 'Start Recording' button and speak into your microphone.")
-
-    # Output area to display the recognized text
-    session_state = get_session_state()
-    output_text = st.text_area("Recognized Text", session_state.transcript, key="mic-output")
-
-    # Start and stop recording buttons
-    if st.button("Start Recording"):
-        session_state.transcript = ""
-        st.info("Recording started...")
-
-    if st.button("Stop Recording"):
-        st.info("Recording stopped.")
-
-    # Button to save the text to a file
-    if st.button("Save to File", on_click="saveToFile()"):
-        st.markdown(" <button onclick='saveToFile()'>Save to File</button>", unsafe_allow_html=True)
-
-    # Display the recognized text after recording is done
-    if session_state.transcript:
-        st.success("Recognized Text:")
-        st.write(session_state.transcript)
-
-def get_session_state():
-    session_id = get_report_ctx().session_id
-    session_info = Server.get_current()._get_session_info(session_id)
-    if session_info is None:
-        return None
-    session = session_info.session
-    if not hasattr(session, "_custom_session_state"):
-        session._custom_session_state = SessionState()
-    return session._custom_session_state
-
-class SessionState:
-    transcript = ""
+    # Display the speech-to-text component
+    SpeechToText()
 
 if __name__ == "__main__":
     main()
