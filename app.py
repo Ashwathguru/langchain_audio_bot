@@ -49,8 +49,7 @@ def main():
         st.info("Recording stopped.")
 
     # Button to save the text to a file
-    if st.button("Save to File"):
-        saveToFile()
+    if st.button("Save to File", on_click="saveToFile()"):
         st.info("Text saved to 'output.txt'")
 
 if __name__ == "__main__":
