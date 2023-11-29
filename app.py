@@ -4,7 +4,7 @@ import streamlit as st
 speech_to_text_code = """
 <div>
     <button id="startSpeechToText">Start Speech to Text</button>
-    <button id="stopSpeechToText" disabled>Stop Speech to Text</button>
+    <button id="stopSpeechToText" disabled>Stop Speech To Text</button>
 </div>
 <textarea id="transcriptionBox" rows="4" cols="50" readonly></textarea>
 
@@ -52,10 +52,10 @@ def main():
     st.title("Streamlit App with Speech-to-Text")
 
     # Display the speech-to-text component
-    #st.components.v1.html(speech_to_text_code, height=200)
+    st.components.v1.html(speech_to_text_code, height=200)
 
     # Receive the transcript from JavaScript
-    transcript = st.components.v1.html("", height=0, key="transcript").transcript
+    transcript = st.components.v1.html("").transcript
 
     # Use the transcript variable in your Python code
     st.write("Transcript:", transcript)
