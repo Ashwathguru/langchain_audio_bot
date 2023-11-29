@@ -1,59 +1,81 @@
 import streamlit as st
-import sounddevice as sd
-import numpy as np
 import speech_recognition as sr
+import io
+import soundfile as sf
+import numpy as np
+
+# Streamlit magic command to include the JavaScript code
+st.markdown(
+    """
+    <script>
+        let recorder;
+        let chunks = [];
+
+        function startRecording() {
+            chunks = [];
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function (stream) {
+                    recorder = new MediaRecorder(stream);
+                    recorder.ondataavailable = function (e) {
+                        if (e.data.size > 0) {
+                            chunks.push(e.data);
+                        }
+                    };
+                    recorder.onstop = function () {
+                        const audioBlob = new Blob(chunks, { type: 'audio/wav' });
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        Shiny.setInputValue('audio_data', audioUrl);
+                    };
+                    recorder.start();
+                })
+                .catch(function (err) {
+                    console.error('Error accessing microphone', err);
+                });
+        }
+
+        function stopRecording() {
+            recorder.stop();
+        }
+    </script>
+    """
+)
 
 def main():
     st.title("Audio Recorder and Transcriber")
 
-    # Global variable to store recorded audio data
-    recorded_audio_data = []
+    # Button to start recording
+    if st.button("Start Recording"):
+        st.markdown("Recording started! Speak into the microphone.")
+        st.markdown("To stop recording, click the 'Stop Recording' button.")
+        st.markdown("<button onclick='stopRecording()'>Stop Recording</button>", unsafe_allow_html=True)
 
-    start_recording_button = st.button("Start Recording")
-    stop_recording_button = st.button("Stop Recording")
+    # Shiny component to receive audio data from JavaScript
+    audio_data = st.shiny_input("audio_data")
 
-    if start_recording_button:
-        st.success("Recording started! Speak into the microphone.")
-        record_audio(recorded_audio_data)
-
-    if stop_recording_button:
-        st.warning("Recording stopped!")
-
-        # Convert audio to text
-        if recorded_audio_data:
-            text = transcribe_audio(np.concatenate(recorded_audio_data))
+    # Button to transcribe and save the audio
+    if st.button("Transcribe and Save"):
+        if audio_data is not None:
+            text = transcribe_audio(audio_data)
             save_to_file(text)
-
             st.success("Audio transcribed and saved to 'sample.txt'")
         else:
             st.warning("No audio recorded!")
 
-def record_audio(recorded_audio_data):
-    # Sample rate and duration for recording
-    sample_rate = 44100
-    duration = 10  # You can adjust this as needed
-
-    # Find the default input device
-    input_device = sd.default.device[0]
-
-    # Use a callback to append audio data to the global variable
-    def callback(indata, frames, time, status):
-        if status:
-            print(status, flush=True)
-        recorded_audio_data.append(indata.copy())
-
-    # Start recording using sounddevice
-    with sd.InputStream(device=input_device, channels=1, samplerate=sample_rate, callback=callback):
-        sd.sleep(int(duration * 1000))
-
 def transcribe_audio(audio_data):
-    recognizer = sr.Recognizer()
+    audio_array = st.audio_recorder(key="audio_recorder")
+    audio_array = np.array(audio_array).T[0]  # Extract the audio data
 
-    with sr.AudioFile(np.array(audio_data).tobytes()) as source:
-        audio_text = recognizer.record(source)
-        text = recognizer.recognize_google(audio_text)
+    # Save audio to a temporary file
+    with io.BytesIO() as wav_io:
+        sf.write(wav_io, audio_array, samplerate=44100, format="wav")
+        wav_io.seek(0)
 
-    return text
+        # Transcribe audio using Google Web Speech API
+        recognizer = sr.Recognizer()
+        with sr.AudioFile(wav_io) as source:
+            audio_text = recognizer.record(source)
+            text = recognizer.recognize_google(audio_text)
+        return text
 
 def save_to_file(text):
     with open("sample.txt", "w") as file:
