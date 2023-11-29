@@ -60,5 +60,9 @@ def main():
     # Display the stored transcribed text
     st.text(f"Stored Transcript: {session_state.transcript}")
 
+    # Display the real-time transcribed text
+    real_time_transcript = st.text_area("Real-Time Transcription", value=session_state.transcript, height=100)
+    session_state.transcript = real_time_transcript
+
 if __name__ == "__main__":
     main()
