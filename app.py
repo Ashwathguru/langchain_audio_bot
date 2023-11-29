@@ -42,19 +42,15 @@ def main():
     output_text = st.text_area("Recognized Text", "", key="mic-output")
 
     # Start and stop recording buttons
-    start_button = st.button("Start Recording", on_click="startRecording()")
-    stop_button = st.button("Stop Recording", on_click="stopRecording()")
-
-    # Button to save the text to a file
-    save_button = st.button("Save to File", on_click="saveToFile()")
-
-    if start_button:
+    if st.button("Start Recording"):
         st.info("Recording started...")
 
-    if stop_button:
+    if st.button("Stop Recording"):
         st.info("Recording stopped.")
 
-    if save_button:
+    # Button to save the text to a file
+    if st.button("Save to File"):
+        saveToFile()
         st.info("Text saved to 'output.txt'")
 
 if __name__ == "__main__":
