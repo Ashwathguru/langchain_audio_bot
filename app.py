@@ -5,6 +5,8 @@ def main():
 
     # Initialize the transcript variable
     transcript_input_key = "transcript_input_key"
+    transcript_output_key = "transcript_output_key"
+
     transcript_input = st.text_area("Transcript:", height=100, key=transcript_input_key)
 
     # Custom HTML and JavaScript code for speech-to-text
@@ -59,10 +61,12 @@ def main():
     # Display the speech-to-text component
     st.components.v1.html(speech_to_text_code, height=200)
 
-    # Check if the transcript has been updated and update the Python transcript variable
-    if st.button("Update Transcript"):
-        updated_transcript = st.session_state[transcript_input_key]
-        st.text_area("Transcript:", value=updated_transcript, height=100, key=transcript_input_key)
+    # Use st.form to handle the form submission
+    with st.form("update_form"):
+        # Check if the transcript has been updated and update the Python transcript variable
+        if st.form_submit_button("Update Transcript"):
+            updated_transcript = st.session_state.transcript_input_key
+            st.text_area("Transcript:", value=updated_transcript, height=100, key=transcript_output_key)
 
 if __name__ == "__main__":
     main()
