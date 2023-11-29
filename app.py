@@ -1,61 +1,60 @@
 import streamlit as st
 import sounddevice as sd
+import numpy as np
 import speech_recognition as sr
-import threading
-import time
 
-def get_input_devices():
-    devices = sd.query_devices()
-    input_devices = [device['name'] for device in devices if 'input' in device['name'].lower()]
-    return input_devices
+def main():
+    st.title("Audio Recorder and Transcriber")
 
-def record_audio(device_index):
-    duration = 15  # seconds
-    fs = 44100  # sampling rate
-    recording = sd.rec(int(duration * fs), samplerate=fs, channels=2, dtype='int16', device=device_index)
-    sd.wait()
+    # Global variable to store recorded audio data
+    recorded_audio_data = []
 
-    return recording
+    start_recording_button = st.button("Start Recording")
+    stop_recording_button = st.button("Stop Recording")
+
+    if start_recording_button:
+        st.success("Recording started! Speak into the microphone.")
+        record_audio(recorded_audio_data)
+
+    if stop_recording_button:
+        st.warning("Recording stopped!")
+
+        # Convert audio to text
+        if recorded_audio_data:
+            text = transcribe_audio(np.concatenate(recorded_audio_data))
+            save_to_file(text)
+
+            st.success("Audio transcribed and saved to 'sample.txt'")
+        else:
+            st.warning("No audio recorded!")
+
+def record_audio(recorded_audio_data):
+    # Sample rate and duration for recording
+    sample_rate = 44100
+    duration = 10  # You can adjust this as needed
+
+    # Use a callback to append audio data to the global variable
+    def callback(indata, frames, time, status):
+        if status:
+            print(status, flush=True)
+        recorded_audio_data.append(indata.copy())
+
+    # Start recording using sounddevice
+    with sd.InputStream(callback=callback, channels=1, samplerate=sample_rate):
+        sd.sleep(int(duration * 1000))
 
 def transcribe_audio(audio_data):
     recognizer = sr.Recognizer()
-    audio = sr.AudioData(audio_data, sample_rate=44100, sample_width=2)
-    
-    try:
-        text = recognizer.recognize_google(audio)
-        return text
-    except sr.UnknownValueError:
-        return "Speech Recognition could not understand audio"
-    except sr.RequestError as e:
-        return f"Error with the speech recognition service: {e}"
 
-def main():
-    st.title("Voice Recorder and Transcriber")
+    with sr.AudioFile(np.array(audio_data).tobytes()) as source:
+        audio_text = recognizer.record(source)
+        text = recognizer.recognize_google(audio_text)
 
-    input_devices = get_input_devices()
-    device_index = st.selectbox("Select Input Device", input_devices, index=0)
+    return text
 
-    recording = None
-    start_recording = st.button("Start Recording")
-
-    if start_recording:
-        st.info("Recording... Click 'Stop Recording' within 15 seconds.")
-        recording = record_audio(input_devices.index(device_index))
-
-    if recording is not None:
-        st.success("Recording complete!")
-
-        stop_recording = st.button("Stop Recording")
-
-        if stop_recording:
-            st.info("Processing... Please wait.")
-            text = transcribe_audio(recording.tobytes())
-
-            st.text_area("Transcribed Text", text, height=200)
-            
-            if st.button("Submit"):
-                st.balloons()
-                print("Transcribed Text:", text)
+def save_to_file(text):
+    with open("sample.txt", "w") as file:
+        file.write(text)
 
 if __name__ == "__main__":
     main()
