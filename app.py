@@ -42,6 +42,12 @@ speech_to_text_code = """
         // Send the transcript to Streamlit
         Streamlit.setComponentValue({ name: 'transcript', data: transcript });
     }
+    
+    // Listen for changes in the transcriptBox and send to Streamlit
+    transcriptionBox.addEventListener("input", function() {
+        const transcript = transcriptionBox.value;
+        Streamlit.setComponentValue({ name: 'transcript', data: transcript });
+    });
 </script>
 """
 
@@ -52,7 +58,7 @@ def main():
     st.components.v1.html(speech_to_text_code, height=200, scrolling=True)
 
     # Receive the transcript from JavaScript
-    transcript = st.components.v1.html(key="transcript").value
+    transcript = st.text("Transcript:", key="transcript_key")
 
     # Save the transcript to a text file
     if transcript:
