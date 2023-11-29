@@ -49,8 +49,8 @@ def main():
         st.info("Recording stopped.")
 
     # Button to save the text to a file
-    if st.button("Save to File", on_click="saveToFile()"):
-        st.info("Text saved to 'output.txt'")
+    if st.button("Save to File"):
+        st.markdown(" <button onclick='saveToFile()'>Save to File</button>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
