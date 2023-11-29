@@ -38,6 +38,9 @@ speech_to_text_code = """
     function handleSpeechResult(event) {
         const transcript = event.results[0][0].transcript;
         transcriptionBox.value = transcript;
+
+        // Send the transcript to the Streamlit app
+        Streamlit.setComponentValue(transcript);
     }
 </script>
 """
@@ -47,6 +50,13 @@ def main():
 
     # Display the speech-to-text component
     st.components.v1.html(speech_to_text_code, height=200)
+
+    # Store the transcript in a Python variable
+    transcript = st.components.v1.html(speech_to_text_code, height=200)
+
+    # Display the stored transcribed text
+    st.text(f"Stored Transcript: {transcript}")
+    print(transcript)
 
 if __name__ == "__main__":
     main()
