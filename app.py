@@ -60,7 +60,7 @@ def main():
 
     # Check if the transcript has been updated and update the Python transcript variable
     if st.button("Update Transcript"):
-        updated_transcript = st.session_state.transcript
+        updated_transcript = st.session_state.transcript_key
         st.text_area("Transcript:", value=updated_transcript, height=100, key="transcript_key")
 
 if __name__ == "__main__":
