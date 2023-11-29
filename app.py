@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit.components.v1 import CustomComponent
 
 # Custom HTML and JavaScript code for speech-to-text
 speech_to_text_code = """
@@ -43,15 +42,11 @@ speech_to_text_code = """
 </script>
 """
 
-class SpeechToText(CustomComponent):
-    def __init__(self):
-        super().__init__(speech_to_text_code, key="speech-to-text")
-
 def main():
     st.title("Streamlit App with Speech-to-Text")
 
     # Display the speech-to-text component
-    SpeechToText()
+    st.components.v1.html(speech_to_text_code, height=200)
 
 if __name__ == "__main__":
     main()
