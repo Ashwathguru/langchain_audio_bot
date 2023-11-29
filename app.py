@@ -10,17 +10,21 @@ def main():
     st.header("Chat with TicketGPT")
     st.title("Voice-to-Text App")
 
-    # Button to start/stop microphone input
+   # Button to start/stop microphone input
+    if "stop" not in st.session_state:
+        st.session_state.stop = False
+
     button_start = st.button("Start Microphone Input")
-    button_stop = st.button("Stop Microphone Input", key="stop")
+    button_stop = st.button("Stop Microphone Input")
 
     if button_start:
+        st.session_state.stop = False
         st.experimental_rerun()
 
     if button_stop:
         st.session_state.stop = True
 
-    if "stop" in st.session_state:
+    if st.session_state.stop:
         st.stop()
 
     # Process voice input
