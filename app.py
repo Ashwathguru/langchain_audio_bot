@@ -40,7 +40,7 @@ speech_to_text_code = """
         transcriptionBox.value = transcript;
 
         // Send the transcript to Streamlit
-        StreamlitApp.postMessage({ transcript: transcript });
+        parent.postMessage({ transcript: transcript }, "*");
     }
 </script>
 """
@@ -51,10 +51,8 @@ def main():
     # Display the speech-to-text component
     st.components.v1.html(speech_to_text_code, height=200, scrolling=True)
 
-    # Receive the transcript from JavaScript
-    transcript = st.dgss.StreamlitScriptRequestQueue.get_request().args.get("transcript", "")
-
-    # Save the transcript to a text file
+    # Register a function to handle the transcript message from JavaScript
+    transcript = st.script_runner.get_query_params().get("transcript", "")
     if transcript:
         with open("transcript.txt", "w") as file:
             file.write(transcript)
