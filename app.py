@@ -44,7 +44,7 @@ speech_to_text_code = """
     }
 
     function saveTranscript(transcript) {
-        // Send the transcript to the server using an HTTP request
+        // Send the transcript to the server using an HTTP POST request
         fetch('/save_transcript', {
             method: 'POST',
             headers: {
@@ -56,22 +56,23 @@ speech_to_text_code = """
 </script>
 """
 
+@st.server_route('/save_transcript', methods=['POST'])
+def save_transcript():
+    # Receive the transcript from the POST request
+    data = st.request.json
+    transcript = data.get('transcript')
+
+    # Handle the transcript as needed (e.g., save to a file)
+    if transcript:
+        with open("transcript.txt", "w") as file:
+            file.write(transcript)
+        st.success("Transcript saved to file.")
+
 def main():
     st.title("Streamlit App with Speech-to-Text")
 
     # Display the speech-to-text component
     st.components.v1.html(speech_to_text_code, height=200, scrolling=True)
-
-    # Handle the HTTP request on the server side
-    if st.button("Save Transcript"):
-        transcript = st.text_area("Transcript:", key="transcript_key")
-        save_to_file(transcript)
-
-def save_to_file(transcript):
-    # Handle the saving logic here, e.g., write to a file
-    with open("transcript.txt", "w") as file:
-        file.write(transcript)
-    st.success("Transcript saved to file.")
 
 if __name__ == "__main__":
     main()
