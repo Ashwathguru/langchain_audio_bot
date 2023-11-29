@@ -1,78 +1,37 @@
 import streamlit as st
 
-# Custom HTML and JavaScript code for speech-to-text
-speech_to_text_code = """
+html_code = """
 <div>
-    <button id="startSpeechToText">Start Speech to Text</button>
-    <button id="stopSpeechToText" disabled>Stop Speech To Text</button>
+    <p id="message">Initial Message</p>
+    <button onclick="sendMessage()">Send Message</button>
 </div>
-<textarea id="transcriptionBox" rows="4" cols="50" readonly></textarea>
 
 <script>
-    let recognition;
-
-    const startButton = document.getElementById("startSpeechToText");
-    const stopButton = document.getElementById("stopSpeechToText");
-    const transcriptionBox = document.getElementById("transcriptionBox");
-
-    startButton.addEventListener("click", startSpeechToText);
-    stopButton.addEventListener("click", stopSpeechToText);
-
-    function startSpeechToText() {
-        recognition = new window.webkitSpeechRecognition();
-        recognition.onresult = handleSpeechResult;
-        recognition.start();
-
-        startButton.disabled = true;
-        stopButton.disabled = false;
-    }
-
-    function stopSpeechToText() {
-        if (recognition) {
-            recognition.stop();
-            startButton.disabled = false;
-            stopButton.disabled = true;
-
-            // Send the transcript to the server
-            saveTranscript(transcriptionBox.value);
+    function sendMessage() {
+        const message = prompt("Enter a new message:");
+        if (message) {
+            // Send the message to Streamlit
+            Streamlit.setComponentValue({ name: 'message', data: message });
         }
     }
 
-    function handleSpeechResult(event) {
-        const transcript = event.results[0][0].transcript;
-        transcriptionBox.value = transcript;
-    }
-
-    function saveTranscript(transcript) {
-        // Send the transcript to the server using an HTTP POST request
-        fetch('/save_transcript', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ transcript: transcript }),
-        });
-    }
+    // Listen for updates from Streamlit
+    Streamlit.getComponentValue("message").then(data => {
+        document.getElementById("message").innerText = data;
+    });
 </script>
 """
 
-@st.server_route('/save_transcript', methods=['POST'])
-def save_transcript():
-    # Receive the transcript from the POST request
-    data = st.request.json
-    transcript = data.get('transcript')
-
-    # Handle the transcript as needed (e.g., save to a file)
-    if transcript:
-        with open("transcript.txt", "w") as file:
-            file.write(transcript)
-        st.success("Transcript saved to file.")
-
 def main():
-    st.title("Streamlit App with Speech-to-Text")
+    st.title("Bi-Directional Communication Example")
 
-    # Display the speech-to-text component
-    st.components.v1.html(speech_to_text_code, height=200, scrolling=True)
+    # Display the HTML component
+    st.components.v1.html(html_code, height=200)
+
+    # Get the updated message from the HTML component
+    updated_message = st.session_state.message
+    if updated_message:
+        st.success(f"Updated Message: {updated_message}")
 
 if __name__ == "__main__":
     main()
