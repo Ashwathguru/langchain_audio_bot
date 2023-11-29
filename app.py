@@ -33,6 +33,9 @@ def record_audio(recorded_audio_data):
     sample_rate = 44100
     duration = 10  # You can adjust this as needed
 
+    # Find the default input device
+    input_device = sd.default.device[0]
+
     # Use a callback to append audio data to the global variable
     def callback(indata, frames, time, status):
         if status:
@@ -40,7 +43,7 @@ def record_audio(recorded_audio_data):
         recorded_audio_data.append(indata.copy())
 
     # Start recording using sounddevice
-    with sd.InputStream(callback=callback, channels=1, samplerate=sample_rate):
+    with sd.InputStream(device=input_device, channels=1, samplerate=sample_rate, callback=callback):
         sd.sleep(int(duration * 1000))
 
 def transcribe_audio(audio_data):
