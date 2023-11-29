@@ -35,15 +35,17 @@ speech_to_text_code = """
             recognition.stop();
             startButton.disabled = false;
             stopButton.disabled = true;
+
+            // Send a script request to Streamlit
+            Streamlit.scriptRequestQueue.push(() => {
+                Streamlit.setComponentValue({ name: "transcript", data: transcriptionBox.value });
+            });
         }
     }
 
     function handleSpeechResult(event) {
         const transcript = event.results[0][0].transcript;
         transcriptionBox.value = transcript;
-
-        // Send the transcript to Streamlit
-        Streamlit.setComponentValue({ name: "transcript", data: transcript });
     }
 </script>
 """
