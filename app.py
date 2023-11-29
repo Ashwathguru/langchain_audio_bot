@@ -4,7 +4,7 @@ import streamlit as st
 speech_to_text_code = """
 <div>
     <button id="startSpeechToText">Start Speech to Text</button>
-    <button id="stopSpeechToText" disabled>Stop Speech to Text</button>
+    <button id="stopSpeechToText" disabled>Stop Speech To Text</button>
 </div>
 <textarea id="transcriptionBox" rows="4" cols="50" readonly></textarea>
 
@@ -32,22 +32,27 @@ speech_to_text_code = """
             recognition.stop();
             startButton.disabled = false;
             stopButton.disabled = true;
+
+            // Send the transcript to the server
+            saveTranscript(transcriptionBox.value);
         }
     }
 
     function handleSpeechResult(event) {
         const transcript = event.results[0][0].transcript;
         transcriptionBox.value = transcript;
-
-        // Send the transcript to Streamlit
-        Streamlit.setComponentValue({ name: 'transcript', data: transcript });
     }
-    
-    // Listen for changes in the transcriptBox and send to Streamlit
-    transcriptionBox.addEventListener("input", function() {
-        const transcript = transcriptionBox.value;
-        Streamlit.setComponentValue({ name: 'transcript', data: transcript });
-    });
+
+    function saveTranscript(transcript) {
+        // Send the transcript to the server using an HTTP request
+        fetch('/save_transcript', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ transcript: transcript }),
+        });
+    }
 </script>
 """
 
@@ -57,13 +62,16 @@ def main():
     # Display the speech-to-text component
     st.components.v1.html(speech_to_text_code, height=200, scrolling=True)
 
-    # Receive the transcript from JavaScript
-    transcript = st.text("Transcript:", key="transcript_key")
+    # Handle the HTTP request on the server side
+    if st.button("Save Transcript"):
+        transcript = st.text_area("Transcript:", key="transcript_key")
+        save_to_file(transcript)
 
-    # Save the transcript to a text file
-    if transcript:
-        with open("transcript.txt", "w") as file:
-            file.write(transcript)
+def save_to_file(transcript):
+    # Handle the saving logic here, e.g., write to a file
+    with open("transcript.txt", "w") as file:
+        file.write(transcript)
+    st.success("Transcript saved to file.")
 
 if __name__ == "__main__":
     main()
