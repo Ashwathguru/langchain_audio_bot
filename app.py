@@ -15,9 +15,6 @@ speech_to_text_code = """
     const stopButton = document.getElementById("stopSpeechToText");
     const transcriptionBox = document.getElementById("transcriptionBox");
 
-    // Establish a connection to Streamlit
-    const Streamlit = window.Streamlit;
-
     startButton.addEventListener("click", startSpeechToText);
     stopButton.addEventListener("click", stopSpeechToText);
 
@@ -36,10 +33,9 @@ speech_to_text_code = """
             startButton.disabled = false;
             stopButton.disabled = true;
 
-            // Send a script request to Streamlit
-            Streamlit.scriptRequestQueue.push(() => {
-                Streamlit.setComponentValue({ name: "transcript", data: transcriptionBox.value });
-            });
+            // Send the transcript to Streamlit
+            const transcript = transcriptionBox.value;
+            Streamlit.setComponentValue({ name: "transcript", data: transcript });
         }
     }
 
@@ -57,10 +53,11 @@ def main():
     st.components.v1.html(speech_to_text_code, height=200)
 
     # Receive the transcript from JavaScript
-    transcript = st.components.v1.html("").transcript
+    transcript = st.text("Transcript:")
 
-    # Use the transcript variable in your Python code
-    st.write("Transcript:", transcript)
+    # Update the transcript value in Python
+    if st.button("Update Transcript"):
+        transcript.text(transcript.text + " Updated!")
 
 if __name__ == "__main__":
     main()
