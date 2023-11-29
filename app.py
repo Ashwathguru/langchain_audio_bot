@@ -3,17 +3,16 @@ import sounddevice as sd
 import speech_recognition as sr
 import threading
 import time
-import openai
-from langchain.agents import create_csv_agent
-from langchain.llms import OpenAI
 
+def get_input_devices():
+    devices = sd.query_devices()
+    input_devices = [device['name'] for device in devices if 'input' in device['name'].lower()]
+    return input_devices
 
-openai.api_key = st.secrets["OPENAI_API_KEY"]
-
-def record_audio():
+def record_audio(device_index):
     duration = 15  # seconds
     fs = 44100  # sampling rate
-    recording = sd.rec(int(duration * fs), samplerate=fs, channels=2, dtype='int16')
+    recording = sd.rec(int(duration * fs), samplerate=fs, channels=2, dtype='int16', device=device_index)
     sd.wait()
 
     return recording
@@ -33,12 +32,15 @@ def transcribe_audio(audio_data):
 def main():
     st.title("Voice Recorder and Transcriber")
 
+    input_devices = get_input_devices()
+    device_index = st.selectbox("Select Input Device", input_devices, index=0)
+
     recording = None
     start_recording = st.button("Start Recording")
 
     if start_recording:
         st.info("Recording... Click 'Stop Recording' within 15 seconds.")
-        recording = record_audio()
+        recording = record_audio(input_devices.index(device_index))
 
     if recording is not None:
         st.success("Recording complete!")
