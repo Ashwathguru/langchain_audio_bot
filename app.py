@@ -1,36 +1,37 @@
 import streamlit as st
+from bokeh.models.widgets import Button
+from bokeh.models import CustomJS
+from streamlit_bokeh_events import streamlit_bokeh_events
 
-# HTML and JS code for text input
-html_code = """
-<div>
-    <label for="textInput">Enter Text:</label>
-    <input type="text" id="textInput" name="textInput">
-    <button onclick="sendText()">Submit</button>
-</div>
-<script>
-    function sendText() {
-        var inputValue = document.getElementById('textInput').value;
-        // Use Streamlit's StreamlitScriptRunner to send the input to the Python code
-        Streamlit.scriptRunner.enqueue({
-            task: "set_value",
-            args: [["userInput"], inputValue],
-        });
+stt_button = Button(label="Speak", width=100)
+
+stt_button.js_on_event("button_click", CustomJS(code="""
+    var recognition = new webkitSpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+ 
+    recognition.onresult = function (e) {
+        var value = "";
+        for (var i = e.resultIndex; i < e.results.length; ++i) {
+            if (e.results[i].isFinal) {
+                value += e.results[i][0].transcript;
+            }
+        }
+        if ( value != "") {
+            document.dispatchEvent(new CustomEvent("GET_TEXT", {detail: value}));
+        }
     }
-</script>
-"""
+    recognition.start();
+    """))
 
-# Use Streamlit components to embed HTML and JS
-st.components.v1.html(html_code, height=100)
+result = streamlit_bokeh_events(
+    stt_button,
+    events="GET_TEXT",
+    key="listen",
+    refresh_on_update=False,
+    override_height=75,
+    debounce_time=0)
 
-# Streamlit app
-def main():
-    st.title("Streamlit Share App with Text Input")
-
-    # Access the value set by the JavaScript
-    user_input = st.session_state.get('userInput', "")
-
-    # Display the text input
-    st.write("You entered:", user_input)
-
-if __name__ == "__main__":
-    main()
+if result:
+    if "GET_TEXT" in result:
+        st.write(result.get("GET_TEXT"))
