@@ -4,7 +4,7 @@ import streamlit as st
 speech_to_text_code = """
 <div>
     <button id="startSpeechToText">Start Speech to Text</button>
-    <button id="stopSpeechToText" disabled>Stop Speech to Text</button>
+    <button id="stopSpeechToText" disabled>Stop Speech To Text</button>
 </div>
 <textarea id="transcriptionBox" rows="4" cols="50" readonly></textarea>
 
@@ -51,11 +51,12 @@ def main():
     # Display the speech-to-text component
     st.components.v1.html(speech_to_text_code, height=200)
 
-    # Display the transcript using st.text
-    transcript = st.text("", key="transcriptValue")
+    # Display the transcript using st.markdown
+    st.markdown("<div id='transcriptValue'></div>", unsafe_allow_html=True)
 
     # Use a Streamlit button to trigger saving the transcript to a file
-    if st.button("Save Transcript to File") and transcript:
+    if st.button("Save Transcript to File"):
+        transcript = st.markdown("", key="transcriptValue")._repr_html_()
         with open("transcript.txt", "w") as file:
             file.write(transcript)
 
