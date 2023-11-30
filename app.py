@@ -10,8 +10,11 @@ html_code = """
 <script>
     function sendText() {
         var inputValue = document.getElementById('textInput').value;
-        // Use Streamlit's setAppProperty to send the input to the Python code
-        Streamlit.setAppProperties({userInput: inputValue});
+        // Use Streamlit's StreamlitScriptRunner to send the input to the Python code
+        Streamlit.scriptRunner.enqueue({
+            task: "set_value",
+            args: [["userInput"], inputValue],
+        });
     }
 </script>
 """
