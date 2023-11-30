@@ -1,72 +1,35 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
-# Custom HTML and JavaScript code for speech-to-text
-speech_to_text_code = """
+# HTML and JS code for text input
+html_code = """
 <div>
-    <button id="startSpeechToText">Start Speech to Text</button>
-    <button id="stopSpeechToText" disabled>Stop Speech To Text</button>
+    <label for="textInput">Enter Text:</label>
+    <input type="text" id="textInput" name="textInput">
+    <button onclick="sendText()">Submit</button>
 </div>
-<textarea id="transcriptionBox" rows="4" cols="50" readonly></textarea>
-
 <script>
-    let recognition;
-
-    const startButton = document.getElementById("startSpeechToText");
-    const stopButton = document.getElementById("stopSpeechToText");
-    const transcriptionBox = document.getElementById("transcriptionBox");
-
-    startButton.addEventListener("click", startSpeechToText);
-    stopButton.addEventListener("click", stopSpeechToText);
-
-    function startSpeechToText() {
-        recognition = new window.webkitSpeechRecognition();
-        recognition.onresult = handleSpeechResult;
-        recognition.start();
-
-        startButton.disabled = true;
-        stopButton.disabled = false;
-    }
-
-    function stopSpeechToText() {
-        if (recognition) {
-            recognition.stop();
-            startButton.disabled = false;
-            stopButton.disabled = true;
-        }
-    }
-
-    function handleSpeechResult(event) {
-        const transcript = event.results[0][0].transcript;
-        transcriptionBox.value = transcript;
-
-        // Send the transcript to the Streamlit app
-        Streamlit.setComponentValue(transcript);
+    function sendText() {
+        var inputValue = document.getElementById('textInput').value;
+        Streamlit.setComponentValue(inputValue);
     }
 </script>
 """
 
+# Use Streamlit components to embed HTML and JS
+text_input_component = components.html(html_code, height=100)
+
+# Streamlit app
 def main():
-    st.title("Streamlit App with Speech-to-Text")
+    st.title("Streamlit Share App with Text Input")
 
-    # Initialize session state
-    if 'transcript' not in st.session_state:
-        st.session_state.transcript = ""
+    # Streamlit component to get text input from HTML/JS
+    user_input = st.text_input("Enter text:")
+    st.write("You entered:", user_input)
 
-    # Display the speech-to-text component
-    st.components.v1.html(speech_to_text_code, height=200)
+    # Display the text input using HTML/JS
+    st.markdown("<h3>HTML/JS Text Input:</h3>", unsafe_allow_html=True)
+    text_input_component
 
-    # Display the transcript using st.markdown
-    st.markdown(f"**Transcript:** {st.session_state.transcript}")
-
-    # Use a Streamlit button to trigger saving the transcript to a file
-    if st.button("Save Transcript to File") and st.session_state.transcript:
-        with open("transcript.txt", "w") as file:
-            print('writing!!')
-            file.write(st.session_state.transcript)
-            st.write(st.session_state.transcript)
-        print(st.session_state.transcript)
-    else:
-        print('DID NOT WORK')
-        st.write('DID NOT WORK')
 if __name__ == "__main__":
     main()
