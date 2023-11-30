@@ -61,7 +61,10 @@ def main():
     # Use a Streamlit button to trigger saving the transcript to a file
     if st.button("Save Transcript to File") and st.session_state.transcript:
         with open("transcript.txt", "w") as file:
+            print('writing!!')
             file.write(st.session_state.transcript)
-
+        print(st.session_state.transcript)
+    else:
+        print('DID NOT WORK')
 if __name__ == "__main__":
     main()
