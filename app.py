@@ -10,7 +10,7 @@ openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 
 def transcribe(audio_file):
-    transcript = openai.Audio.transcribe("whisper-1", audio_file, language="en-US")
+    transcript = openai.Audio.transcribe("whisper-1", audio_file, language="en")
     return transcript
 
 
