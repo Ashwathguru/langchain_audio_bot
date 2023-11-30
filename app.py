@@ -7,7 +7,7 @@ import streamlit as st
 from audio_recorder_streamlit import audio_recorder
 
 # import API key from .env file
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 
 def transcribe(audio_file):
