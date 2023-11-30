@@ -3,7 +3,6 @@ import sys
 import datetime
 import openai
 import streamlit as st
-
 from audio_recorder_streamlit import audio_recorder
 
 # import API key from .env file
@@ -11,7 +10,7 @@ openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 
 def transcribe(audio_file):
-    transcript = openai.Audio.transcribe("whisper-1", audio_file)
+    transcript = openai.Audio.transcribe("whisper-1", audio_file, language="en-US")
     return transcript
 
 
