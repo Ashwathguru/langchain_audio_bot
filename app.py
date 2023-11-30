@@ -40,7 +40,7 @@ speech_to_text_code = """
         transcriptionBox.value = transcript;
 
         // Send the transcript to the Streamlit app
-        document.getElementById("transcriptValue").innerText = transcript;
+        Streamlit.setComponentValue(transcript);
     }
 </script>
 """
@@ -48,17 +48,20 @@ speech_to_text_code = """
 def main():
     st.title("Streamlit App with Speech-to-Text")
 
+    # Initialize session state
+    if 'transcript' not in st.session_state:
+        st.session_state.transcript = ""
+
     # Display the speech-to-text component
     st.components.v1.html(speech_to_text_code, height=200)
 
     # Display the transcript using st.markdown
-    st.markdown("<div id='transcriptValue'></div>", unsafe_allow_html=True)
+    st.markdown(f"**Transcript:** {st.session_state.transcript}")
 
     # Use a Streamlit button to trigger saving the transcript to a file
-    if st.button("Save Transcript to File"):
-        transcript = st.markdown("", key="transcriptValue")._repr_html_()
+    if st.button("Save Transcript to File") and st.session_state.transcript:
         with open("transcript.txt", "w") as file:
-            file.write(transcript)
+            file.write(st.session_state.transcript)
 
 if __name__ == "__main__":
     main()
