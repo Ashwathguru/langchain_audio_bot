@@ -63,8 +63,10 @@ def main():
         with open("transcript.txt", "w") as file:
             print('writing!!')
             file.write(st.session_state.transcript)
+            st.write(st.session_state.transcript)
         print(st.session_state.transcript)
     else:
         print('DID NOT WORK')
+        st.write('DID NOT WORK')
 if __name__ == "__main__":
     main()
